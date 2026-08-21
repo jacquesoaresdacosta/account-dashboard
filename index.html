@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Dashboard — Aug 2026</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #222634;
+    --border: #2a2e3c;
+    --text: #e4e6eb;
+    --text-dim: #8b8fa3;
+    --accent: #4f9eff;
+    --green: #3ecf8e;
+    --red: #ff5a5f;
+    --yellow: #ffb547;
+    --purple: #a855f7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header .date {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .summary-card .label {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .summary-card .value {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .summary-card .sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .table-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: #161823;
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--card-hover); }
+  .account-name {
+    font-weight: 600;
+    color: var(--text);
+  }
+  .user-id {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .commitment {
+    font-weight: 600;
+  }
+  .commitment.none { color: var(--text-dim); }
+  .commitment.high { color: var(--purple); }
+  .spend { font-variant-numeric: tabular-nums; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-messaging { background: rgba(79,158,255,0.15); color: var(--accent); }
+  .badge-voice { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge-mixed { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .badge-ai { background: rgba(255,181,71,0.15); color: var(--yellow); }
+  .badge-numbers { background: rgba(255,90,95,0.15); color: var(--red); }
+  .renewal { color: var(--text-dim); font-size: 12px; }
+  .renewal.soon { color: var(--yellow); font-weight: 600; }
+  .below-commitment {
+    color: var(--red);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .products {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    max-width: 280px;
+  }
+  .ae { color: var(--text-dim); font-size: 12px; }
+  .scroll-wrap { max-height: 600px; overflow-y: auto; }
+  .scroll-wrap::-webkit-scrollbar { width: 6px; }
+  .scroll-wrap::-webkit-scrollbar-track { background: transparent; }
+  .scroll-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .legend {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Account Dashboard</h1>
+  <span class="date">Data as of Aug 21, 2026 (MTD)</span>
+</div>
+
+<div class="summary-cards">
+  <div class="summary-card">
+    <div class="label">Total Accounts</div>
+    <div class="value">25</div>
+    <div class="sub">All active</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Combined Monthly Spend</div>
+    <div class="value">$1.05M</div>
+    <div class="sub">July 2026 (gross)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">With Commitments</div>
+    <div class="value">18</div>
+    <div class="sub">7 without commitments</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Below Commitment</div>
+    <div class="value" style="color: var(--red);">2</div>
+    <div class="sub">Hallow, HappyRobot</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Top Spender</div>
+    <div class="value">Adit</div>
+    <div class="sub">$138K July 2026</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Renewals</div>
+    <div class="value" style="color: var(--yellow);">Sep 1</div>
+    <div class="sub">22 of 25 accounts</div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div>Messaging</div>
+  <div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div>Voice</div>
+  <div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div>Mixed</div>
+  <div class="legend-item"><div class="legend-dot" style="background: var(--yellow);"></div>AI/Verify</div>
+  <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div>Numbers</div>
+</div>
+
+<div class="table-container">
+  <div class="scroll-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Account Name</th>
+        <th>User ID</th>
+        <th>Min. Commitment</th>
+        <th>Renewal</th>
+        <th>June 2026</th>
+        <th>July 2026</th>
+        <th>Aug 2026 (MTD)</th>
+        <th>Main Products</th>
+        <th>AE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="account-name">Pure CallerID LLC</td>
+        <td class="user-id">b87e9e11…</td>
+        <td class="commitment">$10,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$37,386</td>
+        <td class="spend">$37,930</td>
+        <td class="spend">$36,905</td>
+        <td class="products"><span class="badge badge-numbers">Numbers</span> Voice Orig, Msg Orig, LRN</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Esotech Inc.</td>
+        <td class="user-id">45</td>
+        <td class="commitment">$3,500/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$49,891</td>
+        <td class="spend">$48,127</td>
+        <td class="spend">$36,993</td>
+        <td class="products"><span class="badge badge-mixed">Mixed</span> Numbers, Voice Orig, Voice Term, Msg Term</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">GoDaddy (Manager)</td>
+        <td class="user-id">b57a24ab…</td>
+        <td class="commitment high">$30,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$62,719</td>
+        <td class="spend">$67,097</td>
+        <td class="spend">$50,097</td>
+        <td class="products"><span class="badge badge-mixed">Mixed</span> Channels, Media Streaming, Voice Term, Call Control, AI</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">CallTrackingMetrics</td>
+        <td class="user-id">41617e16…</td>
+        <td class="commitment">$5,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$11,540</td>
+        <td class="spend">$11,169</td>
+        <td class="spend">$4,555</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Call Control, Numbers, SMS, Fax API</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">D1AL</td>
+        <td class="user-id">ba917410…</td>
+        <td class="commitment none">None</td>
+        <td class="renewal">N/A</td>
+        <td class="spend">$11,999</td>
+        <td class="spend">$10,690</td>
+        <td class="spend">$7,271</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Numbers, Voice Orig</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">isolved</td>
+        <td class="user-id">f9f10007…</td>
+        <td class="commitment none">None</td>
+        <td class="renewal">N/A</td>
+        <td class="spend">$38,626</td>
+        <td class="spend">$35,914</td>
+        <td class="spend">$21,642</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Messaging Termination (dominant)</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">When I Work Inc.</td>
+        <td class="user-id">c389b2b9…</td>
+        <td class="commitment high">$15,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$33,734</td>
+        <td class="spend">$34,201</td>
+        <td class="spend">$20,732</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), Msg Orig, Numbers, SMS</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">DoctorConnect / Adtel</td>
+        <td class="user-id">4349d032…</td>
+        <td class="commitment">$9,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$28,760</td>
+        <td class="spend">$26,896</td>
+        <td class="spend">$19,577</td>
+        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Call Control</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">2X Solutions</td>
+        <td class="user-id">36271b12…</td>
+        <td class="commitment">$2,500/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$6,580</td>
+        <td class="spend">$8,123</td>
+        <td class="spend">$4,207</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Support, Media Streaming, Call Control</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">TodayTix Group Inc</td>
+        <td class="user-id">3f1b6fb5…</td>
+        <td class="commitment">$6,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$13,570</td>
+        <td class="spend">$12,125</td>
+        <td class="spend">$9,430</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), SMS, Numbers</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">iClassPro Inc.</td>
+        <td class="user-id">5e767f53…</td>
+        <td class="commitment">$3,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$11,682</td>
+        <td class="spend">$11,418</td>
+        <td class="spend">$8,823</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination, SMS, Numbers</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">HappyRobot</td>
+        <td class="user-id">71b9c096…</td>
+        <td class="commitment">$5,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$1,481</td>
+        <td class="spend">$2,203</td>
+        <td class="spend">$1,659</td>
+        <td class="products"><span class="badge badge-numbers">Numbers</span> Phone Numbers, Voice Term, Voice Orig</td>
+        <td class="ae">TBD</td>
+        <td colspan="9" style="padding:0;border:none;"></td>
+      </tr>
+      <tr style="background: rgba(255,90,95,0.05);">
+        <td class="account-name" colspan="7" style="font-size:11px;color:var(--red);padding-left:48px;">⚠️ MTD spend $1,659 well below $5,000 commitment — upcharge likely</td>
+      </tr>
+      <tr>
+        <td class="account-name">Site Tech LLC</td>
+        <td class="user-id">2626ed5c…</td>
+        <td class="commitment">$7,500/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$17,949</td>
+        <td class="spend">$17,975</td>
+        <td class="spend">$10,251</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Voice Term, Numbers, E911, CNAM</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">GoDaddy — Messaging Prod</td>
+        <td class="user-id">ca0948b8…</td>
+        <td class="commitment none">None</td>
+        <td class="renewal">N/A</td>
+        <td class="spend">$64,379</td>
+        <td class="spend">$59,492</td>
+        <td class="spend">$42,389</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%)</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">CloudTalk s.r.o.</td>
+        <td class="user-id">59e5330a…</td>
+        <td class="commitment">$10,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$46,641</td>
+        <td class="spend">$56,641</td>
+        <td class="spend">$30,878</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term (dominant), Voice Orig, Numbers, SDC Surcharge</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Emerging Travel Group</td>
+        <td class="user-id">a21446bf…</td>
+        <td class="commitment none">None</td>
+        <td class="renewal">N/A</td>
+        <td class="spend">$61,184</td>
+        <td class="spend">$75,713</td>
+        <td class="spend">$68,708</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> SIP Termination (99%), Numbers, SIP Orig</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Butternut Box</td>
+        <td class="user-id">193f052b…</td>
+        <td class="commitment">$10,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$35,900</td>
+        <td class="spend">$38,637</td>
+        <td class="spend">$14,341</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Shopmonkey</td>
+        <td class="user-id">e21bdaca…</td>
+        <td class="commitment none">None (expired)</td>
+        <td class="renewal">None</td>
+        <td class="spend">$53,435</td>
+        <td class="spend">$53,807</td>
+        <td class="spend">$39,600</td>
+        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Numbers, LRN, Support, Msg Orig</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Kikoff Inc.</td>
+        <td class="user-id">5e316b86…</td>
+        <td class="commitment">$2,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$78,865</td>
+        <td class="spend">$95,666</td>
+        <td class="spend">$66,549</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">RapidSOS</td>
+        <td class="user-id">0b337fc1…</td>
+        <td class="commitment">$1,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$12,656</td>
+        <td class="spend">$12,583</td>
+        <td class="spend">$7,936</td>
+        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Voice Orig, Call Recording, Numbers</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr style="background: rgba(255,90,95,0.05);">
+        <td class="account-name">Hallow Inc.</td>
+        <td class="user-id">48a02c9e…</td>
+        <td class="commitment high">$15,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend" style="color:var(--red);">$5,276</td>
+        <td class="spend" style="color:var(--red);">$10,930</td>
+        <td class="spend" style="color:var(--red);">$3,612</td>
+        <td class="products"><span class="badge badge-ai">AI/Verify</span> Verify/2FA, Msg Term, Numbers, LRN</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr style="background: rgba(255,90,95,0.05);">
+        <td colspan="7" style="font-size:11px;color:var(--red);padding-left:48px;">⚠️ All 3 months below $15,000 commitment — upcharge risk</td>
+      </tr>
+      <tr>
+        <td class="account-name">Roezan</td>
+        <td class="user-id">295bef95…</td>
+        <td class="commitment">$3,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$61,273</td>
+        <td class="spend">$86,682</td>
+        <td class="spend">$70,076</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (95%), Msg Orig</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">Adit</td>
+        <td class="user-id">b7aa3759…</td>
+        <td class="commitment high">$15,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend" style="font-weight:700;">$102,268</td>
+        <td class="spend" style="font-weight:700;color:var(--green);">$138,708</td>
+        <td class="spend" style="font-weight:700;">$77,978</td>
+        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Fax API, Voice Orig, Numbers</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">AICX</td>
+        <td class="user-id">7da9d3e1…</td>
+        <td class="commitment">$15,000/mo<br><span style="font-size:10px;color:var(--text-dim);">excl. messaging</span></td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$25,885</td>
+        <td class="spend">$24,247</td>
+        <td class="spend">$14,017</td>
+        <td class="products"><span class="badge badge-ai">AI/Voice</span> Voice Orig, Call Control/STT/TTS/AMD, Inference, Numbers</td>
+        <td class="ae">TBD</td>
+      </tr>
+      <tr>
+        <td class="account-name">goHappy Labs</td>
+        <td class="user-id">ff5d81ff…</td>
+        <td class="commitment high">$30,000/mo</td>
+        <td class="renewal soon">Sep 1</td>
+        <td class="spend">$94,064</td>
+        <td class="spend">$86,130</td>
+        <td class="spend">$64,059</td>
+        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%), Numbers, Support, Verify 2FA</td>
+        <td class="ae">TBD</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+</body>
+</html>
