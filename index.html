@@ -184,6 +184,60 @@
   .legend-dot {
     width: 8px; height: 8px; border-radius: 50%;
   }
+  .outreach-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .outreach-section h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .outreach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .outreach-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 3px solid var(--text-dim);
+  }
+  .outreach-card.urgent { border-left-color: var(--red); }
+  .outreach-card.warn { border-left-color: var(--yellow); }
+  .outreach-card.opportunity { border-left-color: var(--green); }
+  .outreach-card .oc-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .outreach-card .oc-reason {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .outreach-card .oc-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .oc-tag.urgent { background: rgba(255,90,95,0.15); color: var(--red); }
+  .oc-tag.warn { background: rgba(255,181,71,0.15); color: var(--yellow); }
+  .oc-tag.opportunity { background: rgba(62,207,142,0.15); color: var(--green); }
 </style>
 </head>
 <body>
@@ -232,6 +286,73 @@
   <div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div>Mixed</div>
   <div class="legend-item"><div class="legend-dot" style="background: var(--yellow);"></div>AI/Verify</div>
   <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div>Numbers</div>
+</div>
+
+<div class="outreach-section">
+  <h2>🔔 Accounts to Reach Out To</h2>
+  <p style="font-size:12px;color:var(--text-dim);">Based on MTD spend deviations vs prior months and commitment levels</p>
+  <div class="outreach-grid">
+    <div class="outreach-card urgent">
+      <div class="oc-tag urgent">⚠️ Urgent — Below Commitment</div>
+      <div class="oc-title">Hallow Inc.</div>
+      <div class="oc-reason">Sep MTD $1,942 — only 13% of $15K/mo commitment. Down 26% vs Jul MTD. On track for upcharge. Reach out to understand usage drop and prevent churn.</div>
+    </div>
+    <div class="outreach-card urgent">
+      <div class="oc-tag urgent">⚠️ Urgent — Steep Decline</div>
+      <div class="oc-title">Adit</div>
+      <div class="oc-reason">Sep MTD $16,727 — down 26% vs Aug MTD ($22,700) and down 17% vs Jul. Biggest absolute drop in portfolio ($6K). Was top spender in July at $138K full month. Investigate cause.</div>
+    </div>
+    <div class="outreach-card urgent">
+      <div class="oc-tag urgent">⚠️ Urgent — Steep Decline</div>
+      <div class="oc-title">CallTrackingMetrics</div>
+      <div class="oc-reason">Sep MTD $3,850 — down 43% vs Jul MTD ($6,716). Three-month downward trend: $6.7K → $4K → $3.9K. Below $5K commitment. Needs intervention.</div>
+    </div>
+    <div class="outreach-card urgent">
+      <div class="oc-tag urgent">⚠️ Urgent — Sharp Drop</div>
+      <div class="oc-title">D1AL</div>
+      <div class="oc-reason">Sep MTD $4,068 — down 21% vs Aug MTD ($5,170) and down 19% vs Jul. No commitment in place. Consistent decline across all three months. Risk of further attrition.</div>
+    </div>
+    <div class="outreach-card warn">
+      <div class="oc-tag warn">⚠️ Watch — Declining Trend</div>
+      <div class="oc-title">Roezan</div>
+      <div class="oc-reason">Sep MTD $17,198 — down 16% vs Aug and 18% vs Jul. Three-month decline: $20.9K → $20.5K → $17.2K. Aug full month was $59K vs Jul $86K (−32%). Check if traffic is shifting elsewhere.</div>
+    </div>
+    <div class="outreach-card warn">
+      <div class="oc-tag warn">⚠️ Watch — Declining Trend</div>
+      <div class="oc-title">CloudTalk</div>
+      <div class="oc-reason">Sep MTD $22,731 — down 16% vs Jul MTD ($27,032). Three-month decline: $27K → $23.2K → $22.7K. Aug full month $44K vs Jul $56K (−22%). Voice spend steadily eroding.</div>
+    </div>
+    <div class="outreach-card warn">
+      <div class="oc-tag warn">⚠️ Watch — Below Commitment Pace</div>
+      <div class="oc-title">Shiftsmart</div>
+      <div class="oc-reason">Sep MTD $7,458 — on track for ~$16K full month vs $7,500/mo commitment. But Jul MTD was only $4,367. Growing fast (+71% vs Jul) — confirm they're scaling and ensure commitment is met.</div>
+    </div>
+    <div class="outreach-card warn">
+      <div class="oc-tag warn">⚠️ Watch — Volatile</div>
+      <div class="oc-title">Emerging Travel Group</div>
+      <div class="oc-reason">Sep MTD $41,654 — down 14% vs Aug MTD ($48,561) but up 44% vs Jul. Aug full month was $103K vs Jul $78K. Volatile spend — no commitment. Check on seasonality and pipeline.</div>
+    </div>
+    <div class="outreach-card opportunity">
+      <div class="oc-tag opportunity">📈 Opportunity — Surging</div>
+      <div class="oc-title">Butternut Box</div>
+      <div class="oc-reason">Sep MTD $27,766 — up 57% vs Aug MTD and up 142% vs Jul. Three-month surge: $11.5K → $17.7K → $27.8K. Aug full month $55K. Great growth — consider upsell / deeper relationship.</div>
+    </div>
+    <div class="outreach-card opportunity">
+      <div class="oc-tag opportunity">📈 Opportunity — Surging</div>
+      <div class="oc-title">HappyRobot</div>
+      <div class="oc-reason">Sep MTD $3,018 — up 136% vs Aug MTD and up 163% vs Jul. But still below $5K commitment. Growth direction is positive — nurture this momentum.</div>
+    </div>
+    <div class="outreach-card opportunity">
+      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
+      <div class="oc-title">TodayTix</div>
+      <div class="oc-reason">Sep MTD $6,674 — up 28% vs Aug and up 56% vs Jul. Consistent growth: $4.3K → $5.2K → $6.7K. Aug full month $13.4K. Approaching $6K commitment — good trajectory.</div>
+    </div>
+    <div class="outreach-card opportunity">
+      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
+      <div class="oc-title">Pure CallerID</div>
+      <div class="oc-reason">Sep MTD $39,056 — up 16% vs Aug and up 19% vs Jul. Three-month growth: $32.8K → $33.7K → $39.1K. Aug full month $41K. Strong upward trend — solidify relationship.</div>
+    </div>
+  </div>
 </div>
 
 <div class="table-container">
