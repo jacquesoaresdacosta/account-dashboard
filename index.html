@@ -103,6 +103,10 @@
     font-size: 10px;
     color: var(--accent);
   }
+  thead th.full-month {
+    font-size: 10px;
+    color: var(--yellow);
+  }
   tbody td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
@@ -130,6 +134,7 @@
   .commitment.high { color: var(--purple); }
   .spend { font-variant-numeric: tabular-nums; }
   .spend-mtd { font-variant-numeric: tabular-nums; font-size: 12px; }
+  .spend-full { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--yellow); }
   .change-pos { color: var(--green); }
   .change-neg { color: var(--red); }
   .badge {
@@ -195,9 +200,9 @@
     <div class="sub">All active</div>
   </div>
   <div class="summary-card">
-    <div class="label">Combined Monthly Spend</div>
-    <div class="value">$1.15M</div>
-    <div class="sub">Aug 2026 (gross)</div>
+    <div class="label">Aug Full Month</div>
+    <div class="value">$811.9K</div>
+    <div class="sub">Total portfolio</div>
   </div>
   <div class="summary-card">
     <div class="label">MTD Spend (1–14)</div>
@@ -240,6 +245,7 @@
         <th rowspan="2">Renewal</th>
         <th colspan="3" class="mtd-group" style="text-align:center;">MTD Spend (Days 1–14)</th>
         <th colspan="2" class="mtd-group" style="text-align:center;">Sep vs Prior Months</th>
+        <th rowspan="2">Aug Full Month</th>
         <th rowspan="2">Main Products</th>
         <th rowspan="2">AE</th>
       </tr>
@@ -262,6 +268,7 @@
         <td class="spend-mtd">$70,733</td>
         <td class="spend-mtd change-pos">+8.4%</td>
         <td class="spend-mtd change-pos">+9.7%</td>
+        <td class="spend-full">$128,320</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Channels, Media Streaming, Voice Term, Call Control, AI</td>
         <td class="ae">TBD</td>
       </tr>
@@ -275,6 +282,7 @@
         <td class="spend-mtd">$41,654</td>
         <td class="spend-mtd change-neg">−14.2%</td>
         <td class="spend-mtd change-pos">+43.6%</td>
+        <td class="spend-full">$103,021</td>
         <td class="products"><span class="badge badge-voice">Voice</span> SIP Termination (99%), Numbers, SIP Orig</td>
         <td class="ae">TBD</td>
       </tr>
@@ -288,6 +296,7 @@
         <td class="spend-mtd">$39,056</td>
         <td class="spend-mtd change-pos">+15.8%</td>
         <td class="spend-mtd change-pos">+18.9%</td>
+        <td class="spend-full">$41,187</td>
         <td class="products"><span class="badge badge-numbers">Numbers</span> Voice Orig, Msg Orig, LRN</td>
         <td class="ae">TBD</td>
       </tr>
@@ -301,6 +310,7 @@
         <td class="spend-mtd">$28,233</td>
         <td class="spend-mtd change-neg">−7.1%</td>
         <td class="spend-mtd change-neg">−7.3%</td>
+        <td class="spend-full">$42,992</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Numbers, Voice Orig, Voice Term, Msg Term</td>
         <td class="ae">TBD</td>
       </tr>
@@ -314,6 +324,7 @@
         <td class="spend-mtd">$25,792</td>
         <td class="spend-mtd change-neg">−8.1%</td>
         <td class="spend-mtd change-pos">+10.3%</td>
+        <td class="spend-full">$50,006</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%), Numbers, Support, Verify 2FA</td>
         <td class="ae">TBD</td>
       </tr>
@@ -327,6 +338,7 @@
         <td class="spend-mtd">$27,766</td>
         <td class="spend-mtd change-pos">+57.0%</td>
         <td class="spend-mtd change-pos">+142.1%</td>
+        <td class="spend-full">$54,943</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
         <td class="ae">TBD</td>
       </tr>
@@ -340,6 +352,7 @@
         <td class="spend-mtd">$18,369</td>
         <td class="spend-mtd change-pos">+16.8%</td>
         <td class="spend-mtd change-pos">+42.9%</td>
+        <td class="spend-full">$37,631</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
         <td class="ae">TBD</td>
       </tr>
@@ -353,6 +366,7 @@
         <td class="spend-mtd">$22,731</td>
         <td class="spend-mtd change-neg">−2.0%</td>
         <td class="spend-mtd change-neg">−15.9%</td>
+        <td class="spend-full">$43,924</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Term (dominant), Voice Orig, Numbers, SDC Surcharge</td>
         <td class="ae">TBD</td>
       </tr>
@@ -366,6 +380,7 @@
         <td class="spend-mtd">$17,198</td>
         <td class="spend-mtd change-neg">−16.0%</td>
         <td class="spend-mtd change-neg">−17.6%</td>
+        <td class="spend-full">$59,129</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (95%), Msg Orig</td>
         <td class="ae">TBD</td>
       </tr>
@@ -379,6 +394,7 @@
         <td class="spend-mtd">$17,429</td>
         <td class="spend-mtd change-neg">−12.6%</td>
         <td class="spend-mtd change-neg">−4.9%</td>
+        <td class="spend-full">$43,373</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Voice, Messaging</td>
         <td class="ae">TBD</td>
       </tr>
@@ -392,6 +408,7 @@
         <td class="spend-mtd">$16,727</td>
         <td class="spend-mtd change-neg">−26.3%</td>
         <td class="spend-mtd change-neg">−16.7%</td>
+        <td class="spend-full">$38,661</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Fax API, Voice Orig, Numbers</td>
         <td class="ae">TBD</td>
       </tr>
@@ -405,6 +422,7 @@
         <td class="spend-mtd">$12,788</td>
         <td class="spend-mtd change-neg">−5.0%</td>
         <td class="spend-mtd change-neg">−2.3%</td>
+        <td class="spend-full">$20,926</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Numbers, LRN, Support, Msg Orig</td>
         <td class="ae">TBD</td>
       </tr>
@@ -418,6 +436,7 @@
         <td class="spend-mtd">$7,901</td>
         <td class="spend-mtd change-neg">−11.7%</td>
         <td class="spend-mtd change-neg">−16.5%</td>
+        <td class="spend-full">$18,186</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Termination</td>
         <td class="ae">TBD</td>
       </tr>
@@ -431,6 +450,7 @@
         <td class="spend-mtd">$7,072</td>
         <td class="spend-mtd change-neg">−8.3%</td>
         <td class="spend-mtd change-neg">−9.0%</td>
+        <td class="spend-full">$13,447</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Voice Term, Numbers, E911, CNAM</td>
         <td class="ae">TBD</td>
       </tr>
@@ -444,6 +464,7 @@
         <td class="spend-mtd">$7,458</td>
         <td class="spend-mtd change-pos">+6.7%</td>
         <td class="spend-mtd change-pos">+70.8%</td>
+        <td class="spend-full">$15,698</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Messaging, Voice</td>
         <td class="ae">TBD</td>
       </tr>
@@ -457,6 +478,7 @@
         <td class="spend-mtd">$5,708</td>
         <td class="spend-mtd change-neg">−4.8%</td>
         <td class="spend-mtd change-neg">−4.4%</td>
+        <td class="spend-full">$15,000</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), Msg Orig, Numbers, SMS</td>
         <td class="ae">TBD</td>
       </tr>
@@ -470,6 +492,7 @@
         <td class="spend-mtd">$6,674</td>
         <td class="spend-mtd change-pos">+28.1%</td>
         <td class="spend-mtd change-pos">+55.9%</td>
+        <td class="spend-full">$13,430</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), SMS, Numbers</td>
         <td class="ae">TBD</td>
       </tr>
@@ -483,6 +506,7 @@
         <td class="spend-mtd">$4,068</td>
         <td class="spend-mtd change-neg">−21.3%</td>
         <td class="spend-mtd change-neg">−19.2%</td>
+        <td class="spend-full">$8,062</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Numbers, Voice Orig</td>
         <td class="ae">TBD</td>
       </tr>
@@ -496,6 +520,7 @@
         <td class="spend-mtd">$4,154</td>
         <td class="spend-mtd change-neg">−19.1%</td>
         <td class="spend-mtd change-neg">−10.7%</td>
+        <td class="spend-full">$10,888</td>
         <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Call Control</td>
         <td class="ae">TBD</td>
       </tr>
@@ -509,6 +534,7 @@
         <td class="spend-mtd">$4,676</td>
         <td class="spend-mtd change-neg">−7.5%</td>
         <td class="spend-mtd change-neg">−9.5%</td>
+        <td class="spend-full">$10,376</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Voice Orig, Call Recording, Numbers</td>
         <td class="ae">TBD</td>
       </tr>
@@ -522,6 +548,7 @@
         <td class="spend-mtd">$5,311</td>
         <td class="spend-mtd change-pos">+11.0%</td>
         <td class="spend-mtd change-pos">+30.9%</td>
+        <td class="spend-full">$7,346</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Support, Media Streaming, Call Control</td>
         <td class="ae">TBD</td>
       </tr>
@@ -535,6 +562,7 @@
         <td class="spend-mtd">$3,850</td>
         <td class="spend-mtd change-neg">−3.7%</td>
         <td class="spend-mtd change-neg">−42.7%</td>
+        <td class="spend-full">$5,379</td>
         <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Call Control, Numbers, SMS, Fax API</td>
         <td class="ae">TBD</td>
       </tr>
@@ -548,6 +576,7 @@
         <td class="spend-mtd">—</td>
         <td class="spend-mtd">—</td>
         <td class="spend-mtd">—</td>
+        <td class="spend-full">—</td>
         <td class="products"><span class="badge badge-ai">AI/Voice</span> Voice Orig, Call Control/STT/TTS/AMD, Inference, Numbers</td>
         <td class="ae">TBD</td>
       </tr>
@@ -561,6 +590,7 @@
         <td class="spend-mtd">$2,199</td>
         <td class="spend-mtd change-neg">−20.0%</td>
         <td class="spend-mtd change-neg">−18.4%</td>
+        <td class="spend-full">$5,869</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Messaging Termination (dominant)</td>
         <td class="ae">TBD</td>
       </tr>
@@ -574,6 +604,7 @@
         <td class="spend-mtd">$1,942</td>
         <td class="spend-mtd change-neg">−19.4%</td>
         <td class="spend-mtd change-neg">−26.4%</td>
+        <td class="spend-full">$15,000</td>
         <td class="products"><span class="badge badge-ai">AI/Verify</span> Verify/2FA, Msg Term, Numbers, LRN</td>
         <td class="ae">TBD</td>
       </tr>
@@ -587,6 +618,7 @@
         <td class="spend-mtd">$2,127</td>
         <td class="spend-mtd change-neg">−8.0%</td>
         <td class="spend-mtd change-neg">−11.9%</td>
+        <td class="spend-full">$4,056</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination, SMS, Numbers</td>
         <td class="ae">TBD</td>
       </tr>
@@ -600,11 +632,12 @@
         <td class="spend-mtd">$3,018</td>
         <td class="spend-mtd change-pos">+135.7%</td>
         <td class="spend-mtd change-pos">+163.0%</td>
+        <td class="spend-full">$5,001</td>
         <td class="products"><span class="badge badge-numbers">Numbers</span> Phone Numbers, Voice Term, Voice Orig</td>
         <td class="ae">TBD</td>
       </tr>
       <tr style="background: rgba(255,90,95,0.05);">
-        <td colspan="11" style="font-size:11px;color:var(--red);padding-left:48px;">⚠️ Sep MTD spend $1,663 well below $5,000 commitment — upcharge likely</td>
+        <td colspan="12" style="font-size:11px;color:var(--red);padding-left:48px;">⚠️ Sep MTD spend $1,663 well below $5,000 commitment — upcharge likely</td>
       </tr>
       <tr>
         <td class="account-name">GoDaddy — Messaging Prod</td>
@@ -616,6 +649,7 @@
         <td class="spend-mtd">—</td>
         <td class="spend-mtd">—</td>
         <td class="spend-mtd">—</td>
+        <td class="spend-full">—</td>
         <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%)</td>
         <td class="ae">TBD</td>
       </tr>
@@ -626,6 +660,7 @@
         <td class="spend-mtd">$404,635</td>
         <td class="spend-mtd change-neg">−0.6%</td>
         <td class="spend-mtd change-pos">+9.3%</td>
+        <td class="spend-full">$811,851</td>
         <td colspan="2"></td>
       </tr>
     </tbody>
