@@ -1,814 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Account Dashboard — Sep 2026</title>
-<style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --card-hover: #222634;
-    --border: #2a2e3c;
-    --text: #e4e6eb;
-    --text-dim: #8b8fa3;
-    --accent: #4f9eff;
-    --green: #3ecf8e;
-    --red: #ff5a5f;
-    --yellow: #ffb547;
-    --purple: #a855f7;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 32px;
-    min-height: 100vh;
-  }
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
-  }
-  .header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  .header .date {
-    color: var(--text-dim);
-    font-size: 14px;
-  }
-  .summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .summary-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-  }
-  .summary-card .label {
-    color: var(--text-dim);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-  .summary-card .value {
-    font-size: 28px;
-    font-weight: 700;
-  }
-  .summary-card .sub {
-    color: var(--text-dim);
-    font-size: 13px;
-    margin-top: 4px;
-  }
-  .table-container {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  thead th {
-    background: #161823;
-    color: var(--text-dim);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    white-space: nowrap;
-  }
-  thead th.mtd-group {
-    background: #1c1f2e;
-    border-bottom: 1px solid var(--border);
-  }
-  thead th.mtd-sub {
-    font-size: 10px;
-    color: var(--accent);
-  }
-  thead th.full-month {
-    font-size: 10px;
-    color: var(--yellow);
-  }
-  tbody td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: var(--card-hover); }
-  .account-name {
-    font-weight: 600;
-    color: var(--text);
-  }
-  .user-id {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .commitment {
-    font-weight: 600;
-  }
-  .commitment.none { color: var(--text-dim); }
-  .commitment.high { color: var(--purple); }
-  .spend { font-variant-numeric: tabular-nums; }
-  .spend-mtd { font-variant-numeric: tabular-nums; font-size: 12px; }
-  .spend-full { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--yellow); }
-  .change-pos { color: var(--green); }
-  .change-neg { color: var(--red); }
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .badge-messaging { background: rgba(79,158,255,0.15); color: var(--accent); }
-  .badge-voice { background: rgba(62,207,142,0.15); color: var(--green); }
-  .badge-mixed { background: rgba(168,85,247,0.15); color: var(--purple); }
-  .badge-ai { background: rgba(255,181,71,0.15); color: var(--yellow); }
-  .badge-numbers { background: rgba(255,90,95,0.15); color: var(--red); }
-  .renewal { color: var(--text-dim); font-size: 12px; }
-  .renewal.soon { color: var(--yellow); font-weight: 600; }
-  .below-commitment {
-    color: var(--red);
-    font-size: 11px;
-    margin-top: 2px;
-  }
-  .products {
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.5;
-    max-width: 280px;
-  }
-  .ae { color: var(--text-dim); font-size: 12px; }
-  #btn-refresh:hover { filter: brightness(1.15); }
-  #btn-refresh:active { transform: translateY(1px); }
-  #btn-refresh.refreshing { opacity: 0.6; cursor: wait; }
-  #btn-refresh.done { background: var(--green); }
-  #btn-refresh.error { background: var(--red); }
-  .scroll-wrap { max-height: 600px; overflow-y: auto; }
-  .scroll-wrap::-webkit-scrollbar { width: 6px; }
-  .scroll-wrap::-webkit-scrollbar-track { background: transparent; }
-  .scroll-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  .legend {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  .legend-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-  }
-  .outreach-section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 28px;
-  }
-  .outreach-section h2 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .outreach-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .outreach-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    border-left: 3px solid var(--text-dim);
-  }
-  .outreach-card.urgent { border-left-color: var(--red); }
-  .outreach-card.warn { border-left-color: var(--yellow); }
-  .outreach-card.opportunity { border-left-color: var(--green); }
-  .outreach-card .oc-title {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 4px;
-  }
-  .outreach-card .oc-reason {
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-  .outreach-card .oc-tag {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-  }
-  .oc-tag.urgent { background: rgba(255,90,95,0.15); color: var(--red); }
-  .oc-tag.warn { background: rgba(255,181,71,0.15); color: var(--yellow); }
-  .oc-tag.opportunity { background: rgba(62,207,142,0.15); color: var(--green); }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <h1>⚡ Account Dashboard</h1>
-  <div style="display:flex;align-items:center;gap:16px;">
-    <span class="date">Data as of Sep 18, 2026 (MTD = days 1–18)</span>
-    <button id="btn-refresh" style="background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;">
-      <span id="refresh-icon">🔄</span> <span id="refresh-label">Refresh</span>
-    </button>
-  </div>
-</div>
-
-<div class="summary-cards">
-  <div class="summary-card">
-    <div class="label">Total Accounts</div>
-    <div class="value">25</div>
-    <div class="sub">25 active</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">Aug Full Month</div>
-    <div class="value">$811.9K</div>
-    <div class="sub">Total portfolio</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">MTD Spend (1–17)</div>
-    <div class="value">$491.4K</div>
-    <div class="sub">Sep vs Jul: +12.1% · vs Aug: +7.8%</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">With Commitments</div>
-    <div class="value">21</div>
-    <div class="sub">5 without commitments</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">Below Commitment</div>
-    <div class="value" style="color: var(--red);">8</div>
-    <div class="sub">CallTrackingMetrics, D1AL, isolved, When I Work Inc., iClassPro Inc.…</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">Renewals</div>
-    <div class="value" style="color: var(--yellow);">Sep 1</div>
-    <div class="sub">22 of 25 accounts</div>
-  </div>
-</div>
-
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div>Messaging</div>
-  <div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div>Voice</div>
-  <div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div>Mixed</div>
-  <div class="legend-item"><div class="legend-dot" style="background: var(--yellow);"></div>AI/Verify</div>
-  <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div>Numbers</div>
-</div>
-
-<div class="outreach-section">
-  <h2>🔔 Accounts to Reach Out To</h2>
-  <p style="font-size:12px;color:var(--text-dim);">Based on MTD spend deviations vs prior months and commitment levels</p>
-  <div class="outreach-grid">
-    <div class="outreach-card urgent">
-      <div class="oc-tag urgent">⚠️ Urgent — Below Commitment</div>
-      <div class="oc-title">Hallow Inc.</div>
-      <div class="oc-reason">Sep MTD $2,300 — only 15% of $15K/mo commitment. Down 24% vs Jul MTD and down 17% vs Aug MTD. On track for upcharge. Reach out to understand usage drop and prevent churn.</div>
-    </div>
-    <div class="outreach-card urgent">
-      <div class="oc-tag urgent">⚠️ Urgent — Steep Decline</div>
-      <div class="oc-title">Adit</div>
-      <div class="oc-reason">Sep MTD $21,909 — down 12% vs Aug MTD ($24,780) and down 17% vs Jul. Biggest absolute drop in portfolio ($2.9K vs Aug). Was top spender in July at $56K MTD. Investigate cause.</div>
-    </div>
-    <div class="outreach-card urgent">
-      <div class="oc-tag urgent">⚠️ Urgent — Sharp Drop</div>
-      <div class="oc-title">D1AL</div>
-      <div class="oc-reason">Sep MTD $4,870 — down 11% vs Aug MTD ($5,457) and down 17% vs Jul. No commitment in place. Consistent decline across all three months. Risk of further attrition.</div>
-    </div>
-    <div class="outreach-card warn">
-      <div class="oc-tag warn">⚠️ Watch — Below Commitment Pace</div>
-      <div class="oc-title">CallTrackingMetrics</div>
-      <div class="oc-reason">Sep MTD $4,217 — below $5K/mo commitment. Down 45% vs Jul MTD ($7,638). Three-month downward trend: $7.6K → $4.2K → $4.2K. Stabilized vs Aug but still below commit. Needs intervention.</div>
-    </div>
-    <div class="outreach-card warn">
-      <div class="oc-tag warn">⚠️ Watch — Declining Trend</div>
-      <div class="oc-title">Roezan</div>
-      <div class="oc-reason">Sep MTD $21,507 — down 13% vs Aug and 11% vs Jul. Three-month decline: $24.3K → $24.6K → $21.5K. Aug full month was $59K. Check if traffic is shifting elsewhere.</div>
-    </div>
-    <div class="outreach-card warn">
-      <div class="oc-tag warn">⚠️ Watch — Declining Trend</div>
-      <div class="oc-title">isolved</div>
-      <div class="oc-reason">Sep MTD $2,797 — down 11% vs Aug MTD ($3,139) and down 19% vs Jul. Three-month decline: $3.5K → $3.1K → $2.8K. No commitment in place. Steady erosion.</div>
-    </div>
-    <div class="outreach-card warn">
-      <div class="oc-tag warn">⚠️ Watch — Volatile</div>
-      <div class="oc-title">Emerging Travel Group</div>
-      <div class="oc-reason">Sep MTD $53,180 — down 8% vs Aug MTD ($57,959) but up 49% vs Jul. Aug full month was $103K vs Jul $75K. Volatile spend — no commitment. Check on seasonality and pipeline.</div>
-    </div>
-    <div class="outreach-card warn">
-      <div class="oc-tag warn">⚠️ Watch — Below Commitment Pace</div>
-      <div class="oc-title">DoctorConnect / Adtel</div>
-      <div class="oc-reason">Sep MTD $5,364 — down 12% vs Aug MTD ($6,106). Below $9K/mo commitment pace (on track for ~$9.5K full month). Three-month decline: $5.6K → $6.1K → $5.4K. Needs attention.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Surging</div>
-      <div class="oc-title">Butternut Box</div>
-      <div class="oc-reason">Sep MTD $31,922 — up 69% vs Aug MTD and up 158% vs Jul. Three-month surge: $12.4K → $18.8K → $31.9K. Aug full month $55K. Great growth — consider upsell / deeper relationship.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Surging</div>
-      <div class="oc-title">HappyRobot</div>
-      <div class="oc-reason">Sep MTD $3,607 — up 156% vs Aug MTD and up 183% vs Jul. But still below $5K commitment. Growth direction is positive — nurture this momentum.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
-      <div class="oc-title">TodayTix</div>
-      <div class="oc-reason">Sep MTD $8,853 — up 38% vs Aug and up 69% vs Jul. Consistent growth: $5.2K → $6.4K → $8.9K. Aug full month $13.4K. Above $6K commitment — great trajectory.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
-      <div class="oc-title">Pure CallerID LLC</div>
-      <div class="oc-reason">Sep MTD $45,342 — up 33% vs Aug and up 35% vs Jul. Three-month growth: $33.5K → $34.2K → $45.3K. Aug full month $41K. Strong upward trend — solidify relationship.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
-      <div class="oc-title">Shiftsmart</div>
-      <div class="oc-reason">Sep MTD $9,450 — up 15% vs Aug and up 74% vs Jul. Three-month growth: $5.4K → $8.2K → $9.4K. Aug full month $15.7K. Above $7.5K commitment — momentum building.</div>
-    </div>
-    <div class="outreach-card opportunity">
-      <div class="oc-tag opportunity">📈 Opportunity — Growing</div>
-      <div class="oc-title">2X Solutions</div>
-      <div class="oc-reason">Sep MTD $6,445 — up 28% vs Aug and up 27% vs Jul. Three-month growth: $5.1K → $5.1K → $6.4K. Aug full month $7.3K. Above $2.5K commitment — steady upward trend.</div>
-    </div>
-  </div>
-</div>
-
-<div class="table-container">
-  <div class="scroll-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th rowspan="2">Account Name</th>
-        <th rowspan="2">User ID</th>
-        <th rowspan="2">Min. Commitment</th>
-        <th rowspan="2">Renewal</th>
-        <th colspan="3" class="mtd-group" style="text-align:center;">MTD Spend (Days 1–17)</th>
-        <th colspan="2" class="mtd-group" style="text-align:center;">Sep vs Prior Months</th>
-        <th rowspan="2">Aug Full Month</th>
-        <th rowspan="2">Main Products</th>
-        <th rowspan="2">AE</th>
-      </tr>
-      <tr>
-        <th class="mtd-sub">Jul MTD</th>
-        <th class="mtd-sub">Aug MTD</th>
-        <th class="mtd-sub">Sep MTD</th>
-        <th class="mtd-sub">vs Aug</th>
-        <th class="mtd-sub">vs Jul</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="account-name">GoDaddy (Manager)</td>
-        <td class="user-id">b57a24ab…</td>
-        <td class="commitment high">$35,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$74,835</td>
-        <td class="spend-mtd">$74,269</td>
-        <td class="spend-mtd">$53,034</td>
-        <td class="spend-mtd change-pos">+13.8%</td>
-        <td class="spend-mtd change-pos">+13.0%</td>
-        <td class="spend-full">$128,320</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Channels, Media Streaming, Voice Term, Call Control, AI</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Emerging Travel Group</td>
-        <td class="user-id">a21446bf…</td>
-        <td class="commitment none">None</td>
-        <td class="renewal">N/A</td>
-        <td class="spend-mtd">$35,807</td>
-        <td class="spend-mtd">$57,959</td>
-        <td class="spend-mtd">$56,582</td>
-        <td class="spend-mtd change-neg">−8.2%</td>
-        <td class="spend-mtd change-pos">+48.5%</td>
-        <td class="spend-full">$103,021</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> SIP Termination (99%), Numbers, SIP Orig</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Pure CallerID LLC</td>
-        <td class="user-id">b87e9e11…</td>
-        <td class="commitment">$10,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$33,537</td>
-        <td class="spend-mtd">$34,225</td>
-        <td class="spend-mtd">$46,508</td>
-        <td class="spend-mtd change-pos">+32.5%</td>
-        <td class="spend-mtd change-pos">+35.2%</td>
-        <td class="spend-full">$41,187</td>
-        <td class="products"><span class="badge badge-numbers">Numbers</span> Voice Orig, Msg Orig, LRN</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">goHappy Labs</td>
-        <td class="user-id">ff5d81ff…</td>
-        <td class="commitment high">$30,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$28,637</td>
-        <td class="spend-mtd">$30,358</td>
-        <td class="spend-mtd">$34,793</td>
-        <td class="spend-mtd change-pos">+7.6%</td>
-        <td class="spend-mtd change-pos">+14.1%</td>
-        <td class="spend-full">$50,006</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%), Numbers, Support, Verify 2FA</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Butternut Box</td>
-        <td class="user-id">193f052b…</td>
-        <td class="commitment">$10,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$12,396</td>
-        <td class="spend-mtd">$18,848</td>
-        <td class="spend-mtd">$32,256</td>
-        <td class="spend-mtd change-pos">+69.4%</td>
-        <td class="spend-mtd change-pos">+157.5%</td>
-        <td class="spend-full">$54,943</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Esotech Inc.</td>
-        <td class="user-id">45</td>
-        <td class="commitment">$3,500/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$33,537</td>
-        <td class="spend-mtd">$31,591</td>
-        <td class="spend-mtd">$32,797</td>
-        <td class="spend-mtd change-pos">+0.3%</td>
-        <td class="spend-mtd change-neg">−5.6%</td>
-        <td class="spend-full">$42,992</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Numbers, Voice Orig, Voice Term, Msg Term</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">CloudTalk s.r.o.</td>
-        <td class="user-id">59e5330a…</td>
-        <td class="commitment">$10,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$33,033</td>
-        <td class="spend-mtd">$25,655</td>
-        <td class="spend-mtd">$29,101</td>
-        <td class="spend-mtd change-pos">+6.9%</td>
-        <td class="spend-mtd change-neg">−17.0%</td>
-        <td class="spend-full">$43,924</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term (dominant), Voice Orig, Numbers, SDC Surcharge</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Prompt Therapy Solutions</td>
-        <td class="user-id">—</td>
-        <td class="commitment high">$25,000/mo</td>
-        <td class="renewal">—</td>
-        <td class="spend-mtd">$23,516</td>
-        <td class="spend-mtd">$22,966</td>
-        <td class="spend-mtd">$25,527</td>
-        <td class="spend-mtd change-pos">+1.1%</td>
-        <td class="spend-mtd change-neg">−1.2%</td>
-        <td class="spend-full">$43,373</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Voice, Messaging</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Adit</td>
-        <td class="user-id">b7aa3759…</td>
-        <td class="commitment high">$15,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$26,329</td>
-        <td class="spend-mtd">$24,780</td>
-        <td class="spend-mtd">$23,129</td>
-        <td class="spend-mtd change-neg">−11.6%</td>
-        <td class="spend-mtd change-neg">−16.8%</td>
-        <td class="spend-full">$38,661</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Fax API, Voice Orig, Numbers</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Kikoff Inc.</td>
-        <td class="user-id">5e316b86…</td>
-        <td class="commitment">$2,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$17,737</td>
-        <td class="spend-mtd">$19,098</td>
-        <td class="spend-mtd">$22,938</td>
-        <td class="spend-mtd change-pos">+14.3%</td>
-        <td class="spend-mtd change-pos">+23.0%</td>
-        <td class="spend-full">$37,631</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (99%)</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Roezan</td>
-        <td class="user-id">295bef95…</td>
-        <td class="commitment">$3,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$24,281</td>
-        <td class="spend-mtd">$24,613</td>
-        <td class="spend-mtd">$23,286</td>
-        <td class="spend-mtd change-neg">−12.6%</td>
-        <td class="spend-mtd change-neg">−11.4%</td>
-        <td class="spend-full">$59,129</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (95%), Msg Orig</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Shopmonkey</td>
-        <td class="user-id">e21bdaca…</td>
-        <td class="commitment">$10,000/mo</td>
-        <td class="renewal">None</td>
-        <td class="spend-mtd">$14,817</td>
-        <td class="spend-mtd">$14,350</td>
-        <td class="spend-mtd">$15,260</td>
-        <td class="spend-mtd change-pos">+1.9%</td>
-        <td class="spend-mtd change-neg">−1.3%</td>
-        <td class="spend-full">$20,926</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Numbers, LRN, Support, Msg Orig</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">MCI</td>
-        <td class="user-id">—</td>
-        <td class="commitment">$15,000/mo</td>
-        <td class="renewal">—</td>
-        <td class="spend-mtd">$11,850</td>
-        <td class="spend-mtd">$10,235</td>
-        <td class="spend-mtd">$10,233</td>
-        <td class="spend-mtd change-neg">−0.0%</td>
-        <td class="spend-mtd change-neg">−13.6%</td>
-        <td class="spend-full">$18,186</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Termination</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Shiftsmart</td>
-        <td class="user-id">8cb6f72d…</td>
-        <td class="commitment">$7,500/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$5,417</td>
-        <td class="spend-mtd">$8,187</td>
-        <td class="spend-mtd">$9,450</td>
-        <td class="spend-mtd change-pos">+15.4%</td>
-        <td class="spend-mtd change-pos">+74.4%</td>
-        <td class="spend-full">$15,698</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Messaging, Voice</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">TodayTix Group Inc</td>
-        <td class="user-id">3f1b6fb5…</td>
-        <td class="commitment">$6,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$5,239</td>
-        <td class="spend-mtd">$6,415</td>
-        <td class="spend-mtd">$9,288</td>
-        <td class="spend-mtd change-pos">+38.0%</td>
-        <td class="spend-mtd change-pos">+69.0%</td>
-        <td class="spend-full">$13,430</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), SMS, Numbers</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Site Tech LLC</td>
-        <td class="user-id">2626ed5c…</td>
-        <td class="commitment">$7,500/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$9,017</td>
-        <td class="spend-mtd">$8,513</td>
-        <td class="spend-mtd">$8,759</td>
-        <td class="spend-mtd change-neg">−1.9%</td>
-        <td class="spend-mtd change-neg">−7.4%</td>
-        <td class="spend-full">$13,447</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Voice Term, Numbers, E911, CNAM</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">When I Work Inc.</td>
-        <td class="user-id">c389b2b9…</td>
-        <td class="commitment high">$15,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$7,261</td>
-        <td class="spend-mtd">$7,218</td>
-        <td class="spend-mtd" style="color:var(--red);">$7,411</td>
-        <td class="spend-mtd change-neg">−3.1%</td>
-        <td class="spend-mtd change-neg">−3.7%</td>
-        <td class="spend-full">$15,000</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (dominant), Msg Orig, Numbers, SMS</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">2X Solutions</td>
-        <td class="user-id">36271b12…</td>
-        <td class="commitment">$2,500/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$5,080</td>
-        <td class="spend-mtd">$5,055</td>
-        <td class="spend-mtd">$6,763</td>
-        <td class="spend-mtd change-pos">+27.5%</td>
-        <td class="spend-mtd change-pos">+26.9%</td>
-        <td class="spend-full">$7,346</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Support, Media Streaming, Call Control</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">RapidSOS</td>
-        <td class="user-id">0b337fc1…</td>
-        <td class="commitment">$7,500/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$6,215</td>
-        <td class="spend-mtd">$5,941</td>
-        <td class="spend-mtd" style="color:var(--red);">$5,958</td>
-        <td class="spend-mtd change-neg">−5.2%</td>
-        <td class="spend-mtd change-neg">−9.3%</td>
-        <td class="spend-full">$10,376</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Voice Orig, Call Recording, Numbers</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">DoctorConnect / Adtel</td>
-        <td class="user-id">4349d032…</td>
-        <td class="commitment">$9,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$5,595</td>
-        <td class="spend-mtd">$6,106</td>
-        <td class="spend-mtd">$5,657</td>
-        <td class="spend-mtd change-neg">−12.2%</td>
-        <td class="spend-mtd change-neg">−4.1%</td>
-        <td class="spend-full">$10,888</td>
-        <td class="products"><span class="badge badge-mixed">Mixed</span> Msg Term, SMS, Voice Term, Call Control</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">D1AL</td>
-        <td class="user-id">ba917410…</td>
-        <td class="commitment">$10,000/mo</td>
-        <td class="renewal">N/A</td>
-        <td class="spend-mtd">$5,885</td>
-        <td class="spend-mtd">$5,457</td>
-        <td class="spend-mtd" style="color:var(--red);">$5,137</td>
-        <td class="spend-mtd change-neg">−10.7%</td>
-        <td class="spend-mtd change-neg">−17.2%</td>
-        <td class="spend-full">$8,062</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Term, Numbers, Voice Orig</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">CallTrackingMetrics</td>
-        <td class="user-id">41617e16…</td>
-        <td class="commitment">$5,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$7,638</td>
-        <td class="spend-mtd">$4,162</td>
-        <td class="spend-mtd" style="color:var(--red);">$4,328</td>
-        <td class="spend-mtd change-pos">+1.3%</td>
-        <td class="spend-mtd change-neg">−44.8%</td>
-        <td class="spend-full">$5,379</td>
-        <td class="products"><span class="badge badge-voice">Voice</span> Voice Orig, Call Control, Numbers, SMS, Fax API</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">HappyRobot</td>
-        <td class="user-id">71b9c096…</td>
-        <td class="commitment high">$15,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$1,275</td>
-        <td class="spend-mtd">$1,409</td>
-        <td class="spend-mtd" style="color:var(--red);">$3,904</td>
-        <td class="spend-mtd change-pos">+156.0%</td>
-        <td class="spend-mtd change-pos">+183.0%</td>
-        <td class="spend-full">$5,001</td>
-        <td class="products"><span class="badge badge-numbers">Numbers</span> Phone Numbers, Voice Term, Voice Orig</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">isolved</td>
-        <td class="user-id">f9f10007…</td>
-        <td class="commitment">$7,500/mo</td>
-        <td class="renewal">N/A</td>
-        <td class="spend-mtd">$3,453</td>
-        <td class="spend-mtd">$3,139</td>
-        <td class="spend-mtd" style="color:var(--red);">$2,978</td>
-        <td class="spend-mtd change-neg">−10.9%</td>
-        <td class="spend-mtd change-neg">−19.0%</td>
-        <td class="spend-full">$5,869</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Messaging Termination (dominant)</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">iClassPro Inc.</td>
-        <td class="user-id">5e767f53…</td>
-        <td class="commitment">$3,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$2,756</td>
-        <td class="spend-mtd">$2,589</td>
-        <td class="spend-mtd" style="color:var(--red);">$2,536</td>
-        <td class="spend-mtd change-neg">−7.7%</td>
-        <td class="spend-mtd change-neg">−13.3%</td>
-        <td class="spend-full">$4,056</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination, SMS, Numbers</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr>
-        <td class="account-name">Hallow Inc.</td>
-        <td class="user-id">48a02c9e…</td>
-        <td class="commitment high">$15,000/mo</td>
-        <td class="renewal soon">Sep 1</td>
-        <td class="spend-mtd">$3,025</td>
-        <td class="spend-mtd">$2,782</td>
-        <td class="spend-mtd" style="color:var(--red);">$2,406</td>
-        <td class="spend-mtd change-neg">−17.3%</td>
-        <td class="spend-mtd change-neg">−24.0%</td>
-        <td class="spend-full">$15,000</td>
-        <td class="products"><span class="badge badge-ai">AI/Verify</span> Verify/2FA, Msg Term, Numbers, LRN</td>
-        <td class="ae">TBD</td>
-      </tr>
-
-      <tr>
-        <td class="account-name">GoDaddy — Messaging Prod</td>
-        <td class="user-id">ca0948b8…</td>
-        <td class="commitment high">$30,000/mo</td>
-        <td class="renewal">N/A</td>
-        <td class="spend-mtd">—</td>
-        <td class="spend-mtd">—</td>
-        <td class="spend-mtd">$35,942</td>
-        <td class="spend-mtd">—</td>
-        <td class="spend-mtd">—</td>
-        <td class="spend-full">—</td>
-        <td class="products"><span class="badge badge-messaging">Messaging</span> Msg Termination (94%)</td>
-        <td class="ae">TBD</td>
-      </tr>
-      <tr style="background: #161823; font-weight: 700;">
-        <td class="account-name" colspan="4">PORTFOLIO TOTAL (26 accounts)</td>
-        <td class="spend-mtd">$438,168</td>
-        <td class="spend-mtd">$455,920</td>
-        <td class="spend-mtd">$491,361</td>
-        <td class="spend-mtd change-pos">+7.8%</td>
-        <td class="spend-mtd change-pos">+12.1%</td>
-        <td class="spend-full">$811,851</td>
-        <td colspan="2"></td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
-</div>
-
-<script>
-(() => {
-  const btn = document.getElementById('btn-refresh');
-  const icon = document.getElementById('refresh-icon');
-  const label = document.getElementById('refresh-label');
-
-  btn.addEventListener('click', () => {
-    if (btn.classList.contains('refreshing')) return;
-    btn.classList.add('refreshing');
-    icon.textContent = '⏳';
-    label.textContent = 'Reloading…';
-    // Reload the page to pick up latest data (auto-refreshed by JAI cron)
-    setTimeout(() => location.reload(), 800);
-  });
-})();
-</script>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Account Dashboard - Analytics Hub</title>
+<style>:root { --bg: #0f1117; --card: #1a1d27; --card-hover: #222634; --border: #2a2e3c; --text: #e4e6eb; --text-dim: #8b8fa3; --accent: #4f9eff; --green: #3ecf8e; --red: #ff5a5f; --yellow: #ffb547; --purple: #a855f7; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); padding: 32px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+.header h1 { font-size: 28px; font-weight: 700; }
+.header .date { color: var(--text-dim); font-size: 14px; }
+.data-source { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.data-source code { background: rgba(79,158,255,0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+.summary-card .label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+.summary-card .value { font-size: 28px; font-weight: 700; }
+.summary-card .sub { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: #161823; color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; padding: 12px 16px; text-align: left; white-space: nowrap; }
+thead th.month-group, thead th.change-group, thead th.full-group { background: #1c1f2e; }
+thead th.month-sub { font-size: 10px; color: var(--accent); }
+thead th.change-sub { font-size: 10px; color: var(--yellow); }
+tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tbody tr:hover { background: var(--card-hover); }
+.account-name { font-weight: 600; }
+.account-name.below { color: var(--red); }
+.user-id { font-family: monospace; font-size: 11px; color: var(--text-dim); }
+.commitment { font-weight: 600; }
+.commitment.none { color: var(--text-dim); }
+.commitment.high { color: var(--purple); }
+.spend-mtd { font-variant-numeric: tabular-nums; font-size: 12px; }
+.spend-full { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--yellow); }
+.spend-gp-pct { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; }
+.change-pos { color: var(--green); }
+.change-neg { color: var(--red); }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-messaging { background: rgba(79,158,255,0.15); color: var(--accent); }
+.badge-voice { background: rgba(62,207,142,0.15); color: var(--green); }
+.badge-mixed { background: rgba(168,85,247,0.15); color: var(--purple); }
+.badge-ai { background: rgba(255,181,71,0.15); color: var(--yellow); }
+.badge-numbers { background: rgba(255,90,95,0.15); color: var(--red); }
+.badge-other { background: rgba(139,143,163,0.15); color: var(--text-dim); }
+.renewal { color: var(--text-dim); font-size: 12px; }
+.renewal.soon { color: var(--yellow); font-weight: 600; }
+.products { font-size: 12px; color: var(--text-dim); max-width: 280px; }
+.ae { color: var(--text-dim); font-size: 12px; }
+.scroll-wrap { max-height: 600px; overflow-y: auto; }
+.legend { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.outreach-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 28px; }
+.outreach-section h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.outreach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px; }
+.outreach-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 16px; border-left: 3px solid var(--text-dim); }
+.outreach-card.urgent { border-left-color: var(--red); }
+.outreach-card.warn { border-left-color: var(--yellow); }
+.outreach-card.opportunity { border-left-color: var(--green); }
+.oc-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.oc-reason { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+.oc-tag { display: inline-block; font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.oc-tag.urgent { background: rgba(255,90,95,0.15); color: var(--red); }
+.oc-tag.warn { background: rgba(255,181,71,0.15); color: var(--yellow); }
+.oc-tag.opportunity { background: rgba(62,207,142,0.15); color: var(--green); }
+.footer { margin-top: 24px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+.table-container { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }</style></head><body>
+<div class="header"><h1>⚡ Account Dashboard - Analytics Hub</h1><span class="date">Data as of Sep 18, 2026 - Source: Analytics Hub (ClickHouse)</span></div>
+<div class="data-source">Revenue: <code>finance.revops_finance_data_mv</code> - GP: <code>finance.tab_csm_revenue_gp_product_mv</code> - MTD = days 1-18</div>
+<div class="summary-cards"><div class="summary-card"><div class="label">Total Accounts</div><div class="value">26</div><div class="sub">25 with AH data + 1 (Prompt Therapy)</div></div><div class="summary-card"><div class="label">Sep MTD (1-18)</div><div class="value">$485,163</div><div class="sub">vs Aug MTD: +7.6% vs Jul MTD: +14.4%</div></div><div class="summary-card"><div class="label">Aug Full Month</div><div class="value">$762,106</div><div class="sub">Total portfolio revenue</div></div><div class="summary-card"><div class="label">With Commitments</div><div class="value">25</div><div class="sub">1 without (Emerging Travel)</div></div><div class="summary-card"><div class="label">Below Commitment Pace</div><div class="value" style="color: var(--red);">4</div><div class="sub">When I Work, D1AL, isolved, Hallow</div></div><div class="summary-card"><div class="label">Aug GP Margin</div><div class="value" style="color: var(--green);">65.2%</div><div class="sub">Portfolio gross profit margin</div></div></div>
+<div class="legend"><div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div>Messaging</div><div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div>Voice</div><div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div>Mixed</div><div class="legend-item"><div class="legend-dot" style="background: var(--yellow);"></div>AI/Verify</div><div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div>Numbers</div></div>
+<div class="outreach-section"><h2>Accounts to Reach Out To</h2><p style="font-size:12px;color:var(--text-dim);">Based on Sep MTD spend vs prior months and commitment levels</p><div class="outreach-grid">
+<div class="outreach-card urgent"><div class="oc-tag urgent">Urgent - Below Commitment</div><div class="oc-title">D1AL</div><div class="oc-reason">Sep MTD $5,137 - below $10K/mo pace. Down 10% vs Aug, down 13% vs Jul. Consistent decline.</div></div>
+<div class="outreach-card urgent"><div class="oc-tag urgent">Urgent - Below Commitment</div><div class="oc-title">Hallow</div><div class="oc-reason">Sep MTD $2,406 - only 16% of $15K/mo commitment. Down 17% vs Aug, down 23% vs Jul.</div></div>
+<div class="outreach-card urgent"><div class="oc-tag urgent">Urgent - Below Commitment</div><div class="oc-title">isolved</div><div class="oc-reason">Sep MTD $2,978 - below $7.5K/mo pace. Down 12% vs Aug, down 15% vs Jul.</div></div>
+<div class="outreach-card urgent"><div class="oc-tag urgent">Urgent - Below Commitment</div><div class="oc-title">iClassPro</div><div class="oc-reason">Sep MTD $2,536 - below $3K/mo pace. Down 7% vs Aug, down 10% vs Jul.</div></div>
+<div class="outreach-card urgent"><div class="oc-tag urgent">Urgent - Below Commitment</div><div class="oc-title">When I Work</div><div class="oc-reason">Sep MTD $7,411 - below $15K/mo pace ($9K by day 18). Flat vs Aug and Jul.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Declining</div><div class="oc-title">Adit</div><div class="oc-reason">Sep MTD $23,129 - down 12% vs Aug, down 15% vs Jul. Was $56K full month in Jul.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Sharp Drop</div><div class="oc-title">CallTrackingMetrics</div><div class="oc-reason">Sep MTD $4,328 - down 45% vs Jul MTD ($7,816). Stabilized vs Aug but below $5K commit.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Declining</div><div class="oc-title">Roezan</div><div class="oc-reason">Sep MTD $23,286 - down 14% vs Aug MTD ($27,121). Aug full month $59K.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Declining</div><div class="oc-title">DoctorConnect</div><div class="oc-reason">Sep MTD $5,657 - down 15% vs Aug MTD. Below $9K/mo commit pace.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Declining</div><div class="oc-title">RapidSOS</div><div class="oc-reason">Sep MTD $5,958 - declining 3 months: $6,502 to $6,263 to $5,958.</div></div>
+<div class="outreach-card warn"><div class="oc-tag warn">Watch - Flat/Declining</div><div class="oc-title">MCI</div><div class="oc-reason">Sep MTD $11,078 - flat vs Aug, down 9% vs Jul. Below $15K/mo commit pace.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Surging</div><div class="oc-title">Butternut Box</div><div class="oc-reason">Sep MTD $25,524 - up 86% vs Aug, up 126% vs Jul. Aug full month $42.6K.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Surging</div><div class="oc-title">HappyRobot</div><div class="oc-reason">Sep MTD $3,904 - up 167% vs Aug, up 206% vs Jul. Now meeting $5K commit.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">TodayTix</div><div class="oc-reason">Sep MTD $9,288 - up 35% vs Aug, up 65% vs Jul. Above $6K commit.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">Pure CallerID</div><div class="oc-reason">Sep MTD $46,545 - up 35% vs Aug, up 38% vs Jul. Aug full month $41K.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">Shiftsmart</div><div class="oc-reason">Sep MTD $10,024 - up 13% vs Aug, up 78% vs Jul. Above $7.5K commit.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">2X Solutions</div><div class="oc-reason">Sep MTD $6,763 - up 27% vs Aug, up 33% vs Jul. Above $2.5K commit.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">Kikoff</div><div class="oc-reason">Sep MTD $22,938 - up 16% vs Aug, up 22% vs Jul. Well above $2K commit.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">GoDaddy</div><div class="oc-reason">Sep MTD $88,981 - up 13% vs Aug, up 17% vs Jul. Aug full month $131K.</div></div>
+<div class="outreach-card opportunity"><div class="oc-tag opportunity">Opportunity - Growing</div><div class="oc-title">goHappy</div><div class="oc-reason">Sep MTD $34,793 - up 9% vs Aug, up 19% vs Jul. Above $30K commit.</div></div>
+</div></div>
+<div class="table-container"><div class="scroll-wrap"><table><thead><tr><th rowspan="2">Account Name</th><th rowspan="2">User ID</th><th rowspan="2">MMC</th><th rowspan="2">Renewal</th><th colspan="3" class="month-group" style="text-align:center;">MTD Revenue (Days 1-18)</th><th colspan="2" class="change-group" style="text-align:center;">Sep vs Prior</th><th rowspan="2" class="full-group">Aug Full Month</th><th rowspan="2" class="full-group">Aug GP %</th><th rowspan="2">Main Products</th><th rowspan="2">AE</th></tr><tr><th class="month-sub">Jul MTD</th><th class="month-sub">Aug MTD</th><th class="month-sub">Sep MTD</th><th class="change-sub">Sep vs Aug</th><th class="change-sub">Sep vs Jul</th></tr></thead><tbody>
+<tr><td class="account-name">GoDaddy (Manager)</td><td class="user-id">b57a24ab…</td><td class="commitment high">$65,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$76,368</td><td class="spend-mtd">$78,938</td><td class="spend-mtd">$88,981</td><td class="spend-mtd change-pos">+12.7%</td><td class="spend-mtd change-pos">+16.5%</td><td class="spend-full">$131,473</td><td class="spend-gp-pct" style="color:var(--red);">31.7%</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Messaging 45%, Voice 44%, AI 5%, Support 3%</td><td class="ae">Mike Jakubisin</td></tr>
+<tr><td class="account-name">Emerging Travel Group</td><td class="user-id">a21446bf…</td><td class="commitment none">None</td><td class="renewal">N/A</td><td class="spend-mtd">$37,768</td><td class="spend-mtd">$61,680</td><td class="spend-mtd">$56,582</td><td class="spend-mtd change-neg">-8.3%</td><td class="spend-mtd change-pos">+49.8%</td><td class="spend-full">$103,712</td><td class="spend-gp-pct" style="color:var(--green);">99.9%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: SIP Termination 100%</td><td class="ae">Alex Sobin</td></tr>
+<tr><td class="account-name">Pure CallerID</td><td class="user-id">b87e9e11…</td><td class="commitment">$10,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$33,651</td><td class="spend-mtd">$34,570</td><td class="spend-mtd">$46,545</td><td class="spend-mtd change-pos">+34.6%</td><td class="spend-mtd change-pos">+38.3%</td><td class="spend-full">$41,427</td><td class="spend-gp-pct" style="color:var(--red);">18.5%</td><td class="products"><span class="badge badge-numbers">Numbers</span> Numbers: 89%, Voice 8%, Identity 3%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">goHappy</td><td class="user-id">ff5d81ff…</td><td class="commitment high">$30,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$29,188</td><td class="spend-mtd">$31,874</td><td class="spend-mtd">$34,793</td><td class="spend-mtd change-pos">+9.2%</td><td class="spend-mtd change-pos">+19.2%</td><td class="spend-full">$50,006</td><td class="spend-gp-pct" style="color:var(--yellow);">45.9%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 92%, Numbers 4%, Support 3%</td><td class="ae">Quinn Marcy</td></tr>
+<tr><td class="account-name">Esotech</td><td class="user-id">45</td><td class="commitment">$3,500/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$33,593</td><td class="spend-mtd">$32,790</td><td class="spend-mtd">$32,797</td><td class="spend-mtd change-pos">+0.0%</td><td class="spend-mtd change-neg">-2.4%</td><td class="spend-full">$43,183</td><td class="spend-gp-pct" style="color:var(--yellow);">61.7%</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Voice 53%, Numbers 42%, Messaging 5%</td><td class="ae">Quinn Marcy</td></tr>
+<tr><td class="account-name">CloudTalk</td><td class="user-id">59e5330a…</td><td class="commitment">$10,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$33,574</td><td class="spend-mtd">$27,368</td><td class="spend-mtd">$29,101</td><td class="spend-mtd change-pos">+6.3%</td><td class="spend-mtd change-neg">-13.3%</td><td class="spend-full">$45,609</td><td class="spend-gp-pct" style="color:var(--green);">91.1%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 89%, Numbers 11%</td><td class="ae">Mario Azzi</td></tr>
+<tr><td class="account-name">Butternut Box</td><td class="user-id">193f052b…</td><td class="commitment">$10,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$11,321</td><td class="spend-mtd">$13,716</td><td class="spend-mtd">$25,524</td><td class="spend-mtd change-pos">+86.1%</td><td class="spend-mtd change-pos">+125.5%</td><td class="spend-full">$42,569</td><td class="spend-gp-pct" style="color:var(--red);">36.5%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 100%</td><td class="ae">Mario Azzi</td></tr>
+<tr><td class="account-name">Roezan</td><td class="user-id">295bef95…</td><td class="commitment">$3,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$25,416</td><td class="spend-mtd">$27,121</td><td class="spend-mtd">$23,286</td><td class="spend-mtd change-neg">-14.1%</td><td class="spend-mtd change-neg">-8.4%</td><td class="spend-full">$59,129</td><td class="spend-gp-pct" style="color:var(--green);">71.0%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 99%</td><td class="ae">Quinn Marcy</td></tr>
+<tr><td class="account-name">Adit</td><td class="user-id">b7aa3759…</td><td class="commitment high">$15,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$27,340</td><td class="spend-mtd">$26,178</td><td class="spend-mtd">$23,129</td><td class="spend-mtd change-neg">-11.6%</td><td class="spend-mtd change-neg">-15.4%</td><td class="spend-full">$38,680</td><td class="spend-gp-pct" style="color:var(--green);">85.5%</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Voice 65%, Messaging 29%, Numbers 5%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">Kikoff</td><td class="user-id">5e316b86…</td><td class="commitment">$2,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$18,750</td><td class="spend-mtd">$19,771</td><td class="spend-mtd">$22,938</td><td class="spend-mtd change-pos">+16.0%</td><td class="spend-mtd change-pos">+22.3%</td><td class="spend-full">$37,631</td><td class="spend-gp-pct" style="color:var(--green);">93.3%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 100%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">Shopmonkey</td><td class="user-id">e21bdaca…</td><td class="commitment">$10,000/mo</td><td class="renewal">None</td><td class="spend-mtd">$14,995</td><td class="spend-mtd">$15,037</td><td class="spend-mtd">$15,260</td><td class="spend-mtd change-pos">+1.5%</td><td class="spend-mtd change-pos">+1.8%</td><td class="spend-full">$20,926</td><td class="spend-gp-pct" style="color:var(--green);">78.0%</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Msg 63%, Numbers 19%, Identity 7%, Support 7%, Voice 4%</td><td class="ae">Ashton Case</td></tr>
+<tr><td class="account-name">MCI</td><td class="user-id">—</td><td class="commitment high">$15,000/mo</td><td class="renewal">—</td><td class="spend-mtd">$12,191</td><td class="spend-mtd">$10,944</td><td class="spend-mtd">$11,078</td><td class="spend-mtd change-pos">+1.2%</td><td class="spend-mtd change-neg">-9.1%</td><td class="spend-full">$18,186</td><td class="spend-gp-pct" style="color:var(--yellow);">60.5%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 98%, Numbers 1%</td><td class="ae">Ryan Simkins</td></tr>
+<tr><td class="account-name">Shiftsmart</td><td class="user-id">8cb6f72d…</td><td class="commitment">$7,500/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$5,628</td><td class="spend-mtd">$8,836</td><td class="spend-mtd">$10,024</td><td class="spend-mtd change-pos">+13.4%</td><td class="spend-mtd change-pos">+78.1%</td><td class="spend-full">$15,697</td><td class="spend-gp-pct" style="color:var(--green);">93.2%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 100%</td><td class="ae">Ryan Simkins</td></tr>
+<tr><td class="account-name">TodayTix</td><td class="user-id">3f1b6fb5…</td><td class="commitment">$6,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$5,615</td><td class="spend-mtd">$6,865</td><td class="spend-mtd">$9,288</td><td class="spend-mtd change-pos">+35.3%</td><td class="spend-mtd change-pos">+65.4%</td><td class="spend-full">$13,430</td><td class="spend-gp-pct" style="color:var(--red);">36.3%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 100%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">Site Tech</td><td class="user-id">2626ed5c…</td><td class="commitment">$7,500/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$9,258</td><td class="spend-mtd">$8,940</td><td class="spend-mtd">$8,759</td><td class="spend-mtd change-neg">-2.0%</td><td class="spend-mtd change-neg">-5.4%</td><td class="spend-full">$13,447</td><td class="spend-gp-pct" style="color:var(--green);">87.3%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 77%, Numbers 20%, Identity 2%</td><td class="ae">Quinn Marcy</td></tr>
+<tr><td class="account-name below">When I Work</td><td class="user-id">c389b2b9…</td><td class="commitment high">$15,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$7,615</td><td class="spend-mtd">$7,657</td><td class="spend-mtd" style="color:var(--red);">$7,411</td><td class="spend-mtd change-neg">-3.2%</td><td class="spend-mtd change-neg">-2.7%</td><td class="spend-full">$15,000</td><td class="spend-gp-pct" style="color:var(--red);">32.2%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 87%, Other 13%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">2X Solutions</td><td class="user-id">36271b12…</td><td class="commitment">$2,500/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$5,104</td><td class="spend-mtd">$5,325</td><td class="spend-mtd">$6,763</td><td class="spend-mtd change-pos">+27.0%</td><td class="spend-mtd change-pos">+32.5%</td><td class="spend-full">$7,346</td><td class="spend-gp-pct" style="color:var(--green);">92.3%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 74%, Support 20%, Numbers 6%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name">RapidSOS</td><td class="user-id">0b337fc1…</td><td class="commitment">$7,500/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$6,502</td><td class="spend-mtd">$6,263</td><td class="spend-mtd">$5,958</td><td class="spend-mtd change-neg">-4.9%</td><td class="spend-mtd change-neg">-8.4%</td><td class="spend-full">$10,386</td><td class="spend-gp-pct" style="color:var(--green);">84.5%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 97%, Numbers 2%</td><td class="ae">Seth Turner</td></tr>
+<tr><td class="account-name">DoctorConnect</td><td class="user-id">4349d032…</td><td class="commitment">$9,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$5,822</td><td class="spend-mtd">$6,652</td><td class="spend-mtd">$5,657</td><td class="spend-mtd change-neg">-15.0%</td><td class="spend-mtd change-neg">-2.8%</td><td class="spend-full">$10,888</td><td class="spend-gp-pct" style="color:var(--green);">94.0%</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Messaging 59%, Voice 39%, Numbers 2%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name below">D1AL</td><td class="user-id">ba917410…</td><td class="commitment">$10,000/mo</td><td class="renewal">N/A</td><td class="spend-mtd">$5,895</td><td class="spend-mtd">$5,705</td><td class="spend-mtd" style="color:var(--red);">$5,137</td><td class="spend-mtd change-neg">-10.0%</td><td class="spend-mtd change-neg">-12.9%</td><td class="spend-full">$8,076</td><td class="spend-gp-pct" style="color:var(--green);">87.7%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 67%, Numbers 32%</td><td class="ae">Seth Turner</td></tr>
+<tr><td class="account-name">CallTrackingMetrics</td><td class="user-id">41617e16…</td><td class="commitment">$5,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$7,816</td><td class="spend-mtd">$4,270</td><td class="spend-mtd">$4,328</td><td class="spend-mtd change-pos">+1.4%</td><td class="spend-mtd change-neg">-44.6%</td><td class="spend-full">$5,380</td><td class="spend-gp-pct" style="color:var(--green);">79.4%</td><td class="products"><span class="badge badge-voice">Voice</span> Voice: 45%, Numbers 34%, Messaging 19%</td><td class="ae">Steele Shemeld</td></tr>
+<tr><td class="account-name">HappyRobot</td><td class="user-id">71b9c096…</td><td class="commitment">$5,000/mo</td><td class="renewal">—</td><td class="spend-mtd">$1,277</td><td class="spend-mtd">$1,461</td><td class="spend-mtd">$3,904</td><td class="spend-mtd change-pos">+167.2%</td><td class="spend-mtd change-pos">+205.7%</td><td class="spend-full">$5,000</td><td class="spend-gp-pct" style="color:var(--green);">75.5%</td><td class="products"><span class="badge badge-other">Other</span> Other: 43%, Numbers 33%, Voice 24%</td><td class="ae">Josh Ornovitz</td></tr>
+<tr><td class="account-name below">isolved</td><td class="user-id">f9f10007…</td><td class="commitment">$7,500/mo</td><td class="renewal">N/A</td><td class="spend-mtd">$3,524</td><td class="spend-mtd">$3,383</td><td class="spend-mtd" style="color:var(--red);">$2,978</td><td class="spend-mtd change-neg">-12.0%</td><td class="spend-mtd change-neg">-15.5%</td><td class="spend-full">$5,869</td><td class="spend-gp-pct" style="color:var(--green);">81.9%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 100%</td><td class="ae">Quinn Marcy</td></tr>
+<tr><td class="account-name">iClassPro</td><td class="user-id">5e767f53…</td><td class="commitment">$3,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$2,814</td><td class="spend-mtd">$2,728</td><td class="spend-mtd">$2,536</td><td class="spend-mtd change-neg">-7.0%</td><td class="spend-mtd change-neg">-9.9%</td><td class="spend-full">$4,056</td><td class="spend-gp-pct" style="color:var(--green);">93.2%</td><td class="products"><span class="badge badge-messaging">Messaging</span> Messaging: 80%, Numbers 20%</td><td class="ae">Zach Spain</td></tr>
+<tr><td class="account-name below">Hallow</td><td class="user-id">48a02c9e…</td><td class="commitment high">$15,000/mo</td><td class="renewal soon">Sep 1</td><td class="spend-mtd">$3,128</td><td class="spend-mtd">$2,912</td><td class="spend-mtd" style="color:var(--red);">$2,406</td><td class="spend-mtd change-neg">-17.4%</td><td class="spend-mtd change-neg">-23.1%</td><td class="spend-full">$15,000</td><td class="spend-gp-pct" style="color:var(--green);">94.0%</td><td class="products"><span class="badge badge-ai">AI/Verify</span> AI/Verify: Verify/2FA, Msg Term, Numbers, LRN</td><td class="ae">Ashton Case</td></tr>
+<tr><td class="account-name">Prompt Therapy Solutions</td><td class="user-id">—</td><td class="commitment high">$25,000/mo</td><td class="renewal">—</td><td class="spend-mtd">—</td><td class="spend-mtd">—</td><td class="spend-mtd">—</td><td class="spend-mtd ">-</td><td class="spend-mtd ">-</td><td class="spend-full">—</td><td class="spend-gp-pct" style="color:var(--text-dim);">—</td><td class="products"><span class="badge badge-mixed">Mixed</span> Mixed: Voice, Messaging</td><td class="ae">Josh Ornovitz</td></tr>
+<tr style="background: #161823; font-weight: 700;"><td class="account-name" colspan="4">PORTFOLIO TOTAL (25 accounts with data)</td><td class="spend-mtd">$424,153</td><td class="spend-mtd">$450,984</td><td class="spend-mtd">$485,163</td><td class="spend-mtd change-pos">+7.6%</td><td class="spend-mtd change-pos">+14.4%</td><td class="spend-full">$762,106</td><td class="spend-gp-pct" style="color:var(--green);">65.2%</td><td colspan="2"></td></tr>
+</tbody></table></div></div>
+<div class="footer"><p><b>Note:</b> GoDaddy combined (Voice $35K + Messaging $30K = $65K/mo MMC).</p><p><b>Note:</b> Prompt Therapy Solutions - no AH data. Shown with "-" for revenue.</p><p><b>Below Commitment Pace:</b> When I Work, D1AL, isolved, Hallow.</p><p><b>Aug GP %:</b> Gross profit margin from August. Green >=70%, yellow 40-70%, red &lt;40%.</p><p>Generated Sep 18, 2026 - Analytics Hub (ClickHouse) - Static dashboard.</p></div>
+</body></html>
