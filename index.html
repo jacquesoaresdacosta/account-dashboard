@@ -164,6 +164,11 @@
     max-width: 280px;
   }
   .ae { color: var(--text-dim); font-size: 12px; }
+  #btn-refresh:hover { filter: brightness(1.15); }
+  #btn-refresh:active { transform: translateY(1px); }
+  #btn-refresh.refreshing { opacity: 0.6; cursor: wait; }
+  #btn-refresh.done { background: var(--green); }
+  #btn-refresh.error { background: var(--red); }
   .scroll-wrap { max-height: 600px; overflow-y: auto; }
   .scroll-wrap::-webkit-scrollbar { width: 6px; }
   .scroll-wrap::-webkit-scrollbar-track { background: transparent; }
@@ -244,7 +249,12 @@
 
 <div class="header">
   <h1>⚡ Account Dashboard</h1>
-  <span class="date">Data as of Sep 17, 2026 (MTD = days 1–17)</span>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span class="date">Data as of Sep 17, 2026 (MTD = days 1–17)</span>
+    <button id="btn-refresh" style="background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;">
+      <span id="refresh-icon">🔄</span> <span id="refresh-label">Refresh</span>
+    </button>
+  </div>
 </div>
 
 <div class="summary-cards">
@@ -782,6 +792,79 @@
   </table>
   </div>
 </div>
+
+<script>
+(() => {
+  const btn = document.getElementById('btn-refresh');
+  const icon = document.getElementById('refresh-icon');
+  const label = document.getElementById('refresh-label');
+
+  // Detect A2UI bridge (Canvas / OpenClaw node)
+  const hasA2UI = () => typeof window.clawdbotSendUserAction === 'function'
+    || (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.clawdbotCanvasA2UIAction);
+
+  btn.addEventListener('click', async () => {
+    if (btn.classList.contains('refreshing')) return;
+
+    btn.classList.add('refreshing');
+    icon.textContent = '⏳';
+    label.textContent = 'Refreshing…';
+
+    if (hasA2UI()) {
+      // Send refresh action through A2UI bridge to agent
+      try {
+        window.clawdbotSendUserAction({
+          name: 'refresh-dashboard',
+          surfaceId: 'main',
+          sourceComponentId: 'dashboard.refresh',
+          context: { t: Date.now() }
+        });
+        icon.textContent = '✓';
+        label.textContent = 'Requested!';
+        btn.classList.remove('refreshing');
+        btn.classList.add('done');
+        setTimeout(() => {
+          icon.textContent = '🔄';
+          label.textContent = 'Refresh';
+          btn.classList.remove('done');
+        }, 4000);
+      } catch (e) {
+        icon.textContent = '✕';
+        label.textContent = 'Failed';
+        btn.classList.remove('refreshing');
+        btn.classList.add('error');
+        setTimeout(() => {
+          icon.textContent = '🔄';
+          label.textContent = 'Refresh';
+          btn.classList.remove('error');
+        }, 4000);
+      }
+    } else {
+      // No bridge — try a local refresh endpoint, fall back to hint
+      try {
+        const resp = await fetch('/__openclaw__/refresh-dashboard', { method: 'POST' });
+        if (resp.ok) {
+          icon.textContent = '✓';
+          label.textContent = 'Refreshed!';
+          btn.classList.remove('refreshing');
+          btn.classList.add('done');
+          setTimeout(() => location.reload(), 2000);
+        } else {
+          throw new Error('endpoint not available');
+        }
+      } catch (e) {
+        icon.textContent = '💬';
+        label.textContent = 'Ask JAI to refresh';
+        btn.classList.remove('refreshing');
+        setTimeout(() => {
+          icon.textContent = '🔄';
+          label.textContent = 'Refresh';
+        }, 4000);
+      }
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
