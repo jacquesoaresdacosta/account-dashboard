@@ -799,31 +799,13 @@
   const icon = document.getElementById('refresh-icon');
   const label = document.getElementById('refresh-label');
 
-  btn.addEventListener('click', async () => {
+  btn.addEventListener('click', () => {
     if (btn.classList.contains('refreshing')) return;
-
     btn.classList.add('refreshing');
     icon.textContent = '⏳';
-    label.textContent = 'Opening Slack…';
-
-    // Open Slack DM to JAI with pre-filled refresh message
-    // This works from any browser since it's just a deep link
-    const slackText = encodeURIComponent('refresh the account dashboard');
-    const slackUrl = `slack://message?team=T033NA4C3&channel=D0ACX1VC97B&text=${slackText}`;
-    
-    window.location.href = slackUrl;
-    
-    // Also try web fallback
-    setTimeout(() => {
-      const webUrl = `https://telnyx.slack.com/archives/D0ACX1VC97B`;
-      window.open(webUrl, '_blank');
-    }, 500);
-
-    setTimeout(() => {
-      icon.textContent = '🔄';
-      label.textContent = 'Refresh';
-      btn.classList.remove('refreshing');
-    }, 3000);
+    label.textContent = 'Reloading…';
+    // Reload the page to pick up latest data (auto-refreshed by JAI cron)
+    setTimeout(() => location.reload(), 800);
   });
 })();
 </script>
