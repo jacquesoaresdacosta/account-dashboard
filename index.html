@@ -799,69 +799,31 @@
   const icon = document.getElementById('refresh-icon');
   const label = document.getElementById('refresh-label');
 
-  // Detect A2UI bridge (Canvas / OpenClaw node)
-  const hasA2UI = () => typeof window.clawdbotSendUserAction === 'function'
-    || (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.clawdbotCanvasA2UIAction);
-
   btn.addEventListener('click', async () => {
     if (btn.classList.contains('refreshing')) return;
 
     btn.classList.add('refreshing');
     icon.textContent = '⏳';
-    label.textContent = 'Refreshing…';
+    label.textContent = 'Opening Slack…';
 
-    if (hasA2UI()) {
-      // Send refresh action through A2UI bridge to agent
-      try {
-        window.clawdbotSendUserAction({
-          name: 'refresh-dashboard',
-          surfaceId: 'main',
-          sourceComponentId: 'dashboard.refresh',
-          context: { t: Date.now() }
-        });
-        icon.textContent = '✓';
-        label.textContent = 'Requested!';
-        btn.classList.remove('refreshing');
-        btn.classList.add('done');
-        setTimeout(() => {
-          icon.textContent = '🔄';
-          label.textContent = 'Refresh';
-          btn.classList.remove('done');
-        }, 4000);
-      } catch (e) {
-        icon.textContent = '✕';
-        label.textContent = 'Failed';
-        btn.classList.remove('refreshing');
-        btn.classList.add('error');
-        setTimeout(() => {
-          icon.textContent = '🔄';
-          label.textContent = 'Refresh';
-          btn.classList.remove('error');
-        }, 4000);
-      }
-    } else {
-      // No bridge — try a local refresh endpoint, fall back to hint
-      try {
-        const resp = await fetch('/__openclaw__/refresh-dashboard', { method: 'POST' });
-        if (resp.ok) {
-          icon.textContent = '✓';
-          label.textContent = 'Refreshed!';
-          btn.classList.remove('refreshing');
-          btn.classList.add('done');
-          setTimeout(() => location.reload(), 2000);
-        } else {
-          throw new Error('endpoint not available');
-        }
-      } catch (e) {
-        icon.textContent = '💬';
-        label.textContent = 'Ask JAI to refresh';
-        btn.classList.remove('refreshing');
-        setTimeout(() => {
-          icon.textContent = '🔄';
-          label.textContent = 'Refresh';
-        }, 4000);
-      }
-    }
+    // Open Slack DM to JAI with pre-filled refresh message
+    // This works from any browser since it's just a deep link
+    const slackText = encodeURIComponent('refresh the account dashboard');
+    const slackUrl = `slack://message?team=T033NA4C3&channel=D0ACX1VC97B&text=${slackText}`;
+    
+    window.location.href = slackUrl;
+    
+    // Also try web fallback
+    setTimeout(() => {
+      const webUrl = `https://telnyx.slack.com/archives/D0ACX1VC97B`;
+      window.open(webUrl, '_blank');
+    }, 500);
+
+    setTimeout(() => {
+      icon.textContent = '🔄';
+      label.textContent = 'Refresh';
+      btn.classList.remove('refreshing');
+    }, 3000);
   });
 })();
 </script>
