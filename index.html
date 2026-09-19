@@ -27,6 +27,7 @@ tbody tr:hover { background: var(--card-hover); }
 .user-id:hover .uid-short { text-decoration: underline; }
 .user-id .copy-btn { display: none; position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 4px; font-size: 10px; background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; white-space: nowrap; cursor: pointer; }
 .user-id:hover .copy-btn { display: inline-block; }
+.user-id .copy-btn { display: none; position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 4px; font-size: 10px; background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; white-space: nowrap; cursor: pointer; z-index: 100; }
 .user-id .copy-btn.copied { background: var(--green); }
 .commitment { font-weight: 600; }
 .commitment.none { color: var(--text-dim); }
@@ -123,12 +124,38 @@ tbody tr:hover { background: var(--card-hover); }
 <tr style="background: #161823; font-weight: 700;"><td class="account-name" colspan="4">PORTFOLIO TOTAL (26 accounts)</td><td class="spend-mtd">$405,559</td><td class="spend-mtd">$408,654</td><td class="spend-mtd">$474,094</td><td class="spend-mtd change-pos">+16.0%</td><td class="spend-mtd change-pos">+16.9%</td><td class="spend-full">$805,479</td><td class="spend-gp-pct" style="color:var(--green);">65.2%</td><td class="spend-gp-usd">$520,734</td><td colspan="2"></td></tr>
 </tbody></table></div></div>
 <div class="footer"><p><b>Note:</b> GoDaddy combined (Voice $35K + Messaging $30K = $65K/mo MMC).</p><p><b>Note:</b> Prompt Therapy Solutions has csm_owner=null in AH (not mapped to Jacque Costa). Queried directly by user_id.</p><p><b>MTD = days 1–17 (D-1):</b> Revenue through yesterday (7). Below commitment pace uses 17/30 proration.</p><p><b>Aug GP $:</b> Gross profit dollars from August. <b>Aug GP %:</b> Gross profit margin. Green ≥70%, yellow 40–70%, red &lt;40%.</p><p>Sorted by Aug GP $ descending. Generated 8, 2026 - Analytics Hub (ClickHouse) - Static dashboard.</p></div><script>
-function copyUid(btn, uid) {
-  navigator.clipboard.writeText(uid).then(() => {
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
-  });
+function copyUid(el, uid) {
+  // Try clipboard API first, fallback to execCommand
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(uid).then(() => {
+      el.textContent = 'Copied!';
+      el.classList.add('copied');
+      setTimeout(() => { el.textContent = 'Copy'; el.classList.remove('copied'); }, 1500);
+    }).catch(() => {
+      fallbackCopy(uid, el);
+    });
+  } else {
+    fallbackCopy(uid, el);
+  }
 }
+function fallbackCopy(text, el) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); el.textContent = 'Copied!'; el.classList.add('copied'); setTimeout(() => { el.textContent = 'Copy'; el.classList.remove('copied'); }, 1500); } catch(e) { el.textContent = 'Press Ctrl+C'; setTimeout(() => { el.textContent = 'Copy'; }, 1500); }
+  document.body.removeChild(ta);
+}
+// Also make the whole cell clickable
+document.addEventListener('click', function(e) {
+  var cell = e.target.closest('.user-id[data-uid]');
+  if (cell) {
+    var uid = cell.getAttribute('data-uid');
+    var btn = cell.querySelector('.copy-btn');
+    if (btn) copyUid(btn, uid);
+  }
+});
 </script>
 </body></html>
