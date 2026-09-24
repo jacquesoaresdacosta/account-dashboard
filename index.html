@@ -158,4 +158,63 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
+
+<script>
+// Refresh button logic
+async function refreshDashboard() {
+  const btn = document.getElementById('refreshBtn');
+  const status = document.getElementById('refreshStatus');
+  const btnText = btn.querySelector('.btn-text');
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btnText.textContent = 'Refreshing...';
+  status.className = 'refresh-status visible';
+  status.textContent = 'Querying Analytics Hub + Salesforce...';
+
+  try {
+    const resp = await fetch('/refresh', { method: 'POST' });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(data.message || 'Refresh failed to start');
+    }
+
+    // Poll for completion
+    const poll = setInterval(async () => {
+      try {
+        const sresp = await fetch('/refresh-status');
+        const sdata = await sresp.json();
+
+        if (sdata.status === 'done') {
+          clearInterval(poll);
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btnText.textContent = 'Refresh';
+          status.className = 'refresh-status visible success';
+          status.textContent = '✓ Refreshed — reloading...';
+          setTimeout(() => location.reload(), 1000);
+        } else if (sdata.status === 'error') {
+          clearInterval(poll);
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btnText.textContent = 'Refresh';
+          status.className = 'refresh-status visible error';
+          status.textContent = '✗ ' + (sdata.message || 'Refresh failed');
+        } else if (sdata.status === 'running') {
+          status.textContent = sdata.message || 'Running...';
+        }
+      } catch (e) {
+        // Server might be restarting, keep polling
+      }
+    }, 2000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btnText.textContent = 'Refresh';
+    status.className = 'refresh-status visible error';
+    status.textContent = '✗ ' + e.message + ' (is the dashboard server running?)';
+  }
+}
+</script>
 </body></html>
